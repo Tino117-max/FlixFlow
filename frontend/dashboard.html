@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FixFlow | Dashboard</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body data-roles="ADMIN,CLIENTE,TECNICO">
+  <header class="topbar dashboard-header">
+    <div class="logo">FixFlow</div>
+    <nav>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="usuarios.html" data-roles="ADMIN">Usuarios</a>
+      <a href="clientes.html" data-roles="ADMIN,CLIENTE">Clientes</a>
+      <a href="equipos.html" data-roles="ADMIN,CLIENTE">Equipos</a>
+      <a href="solicitudes.html" data-roles="ADMIN,CLIENTE,TECNICO">Solicitudes</a>
+      <a href="diagnosticos.html" data-roles="ADMIN,TECNICO">Diagnósticos</a>
+      <a href="reparaciones.html" data-roles="ADMIN,TECNICO">Reparaciones</a>
+      <a id="logoutBtn" href="#">Cerrar sesión</a>
+      <span id="currentRole" class="role-label"></span>
+    </nav>
+  </header>
+
+  <main class="container dashboard-page">
+    <section class="cards-grid">
+      <div class="stat-card">
+        <span>Total solicitudes</span>
+        <strong id="totalSolicitudes">0</strong>
+      </div>
+      <div class="stat-card">
+        <span>Pendientes</span>
+        <strong id="solicitudesPendientes">0</strong>
+      </div>
+      <div class="stat-card">
+        <span>En reparación</span>
+        <strong id="solicitudesReparacion">0</strong>
+      </div>
+      <div class="stat-card">
+        <span>Finalizadas</span>
+        <strong id="solicitudesFinalizadas">0</strong>
+      </div>
+      <div class="stat-card">
+        <span>Usuarios</span>
+        <strong id="usuariosCount">0</strong>
+      </div>
+      <div class="stat-card">
+        <span>Equipos</span>
+        <strong id="equiposCount">0</strong>
+      </div>
+    </section>
+
+    <section class="panel-container" id="sectionsPanel">
+      <div class="panel">
+        <h2>Usuarios</h2>
+        <table>
+          <thead>
+            <tr><th>Nombre</th><th>Email</th><th>Rol</th></tr>
+          </thead>
+          <tbody id="usuariosTableBody"></tbody>
+        </table>
+      </div>
+
+      <div class="panel">
+        <h2>Equipos</h2>
+        <table>
+          <thead>
+            <tr><th>Serial</th><th>Tipo</th><th>Marca</th></tr>
+          </thead>
+          <tbody id="equiposTableBody"></tbody>
+        </table>
+      </div>
+
+      <div class="panel wide-panel">
+        <h2>Solicitudes</h2>
+        <table>
+          <thead>
+            <tr><th>ID</th><th>Cliente</th><th>Prioridad</th><th>Estado</th></tr>
+          </thead>
+          <tbody id="solicitudesTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>

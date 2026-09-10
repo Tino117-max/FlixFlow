@@ -1,0 +1,35 @@
+# Java / Maven / Spring Boot
+**/target/
+**/.classpath
+**/.project
+**/.settings/
+**/.idea/
+**/*.iml
+**/bin/
+**/build/
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# Python (venv local del proyecto)
+.venv/
+__pycache__/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment / secrets
+.env
+.env.*
+**/application-local.properties
+**/application-secret.properties
+**/*.pem
+**/*key*
+
+# Logs
+*.log
+
+# MySQL dumps
+*.sql.gz
