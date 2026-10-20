@@ -4,6 +4,7 @@ import com.fixflow.dto.AsignacionRequest;
 import com.fixflow.exception.ResourceNotFoundException;
 import com.fixflow.model.Asignacion;
 import com.fixflow.model.EstadoSolicitud;
+import com.fixflow.model.EstadoUsuario;
 import com.fixflow.model.Solicitud;
 import com.fixflow.model.Tecnico;
 import com.fixflow.repository.AsignacionRepository;
@@ -43,6 +44,12 @@ public class AsignacionService {
         Tecnico tecnico = tecnicoRepository.findById(request.getIdTecnico())
                 .orElseThrow(() -> new ResourceNotFoundException("Técnico no encontrado"));
 
+        if (tecnico.getUsuario() == null || tecnico.getUsuario().getEstado() != EstadoUsuario.ACTIVO) {
+            throw new IllegalArgumentException("El técnico seleccionado no está activo");
+        }
+        if (solicitud.getEstado() != EstadoSolicitud.SOLICITUD && solicitud.getEstado() != EstadoSolicitud.PENDIENTE) {
+            throw new IllegalArgumentException("Solo se pueden asignar solicitudes pendientes");
+        }
         if (asignacionRepository.existsBySolicitud_IdSolicitud(request.getIdSolicitud())) {
             throw new IllegalArgumentException("La solicitud ya tiene una asignación");
         }
@@ -68,6 +75,11 @@ public class AsignacionService {
     public void delete(Long id) {
         Asignacion asignacion = asignacionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Asignación no encontrada"));
+        Solicitud solicitud = asignacion.getSolicitud();
+        if (solicitud != null && solicitud.getEstado() == EstadoSolicitud.ASIGNADA) {
+            solicitud.setEstado(EstadoSolicitud.PENDIENTE);
+            solicitudRepository.save(solicitud);
+        }
         asignacionRepository.delete(asignacion);
     }
 }

@@ -28,7 +28,7 @@ public class ReparacionController {
     }
 
     @PostMapping("/reparaciones")
-    @PreAuthorize("hasAnyRole('ADMIN','TECNICO')")
+    @PreAuthorize("hasRole('TECNICO')")
     public ResponseEntity<Reparacion> create(@Valid @RequestBody ReparacionRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(reparacionService.create(request));
     }
@@ -40,13 +40,13 @@ public class ReparacionController {
     }
 
     @PutMapping("/reparaciones/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','TECNICO')")
+    @PreAuthorize("hasRole('TECNICO')")
     public ResponseEntity<Reparacion> update(@PathVariable Long id, @Valid @RequestBody ReparacionRequest request) {
         return ResponseEntity.ok(reparacionService.update(id, request));
     }
 
     @DeleteMapping("/reparaciones/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('TECNICO')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         reparacionService.delete(id);
         return ResponseEntity.noContent().build();

@@ -1,10 +1,14 @@
 package com.fixflow.service;
 
+import com.fixflow.dto.SolicitudDetalleResponse;
 import com.fixflow.dto.SolicitudRequest;
 import com.fixflow.exception.ResourceNotFoundException;
+import com.fixflow.model.Asignacion;
 import com.fixflow.model.Cliente;
+import com.fixflow.model.Diagnostico;
 import com.fixflow.model.Equipo;
 import com.fixflow.model.EstadoSolicitud;
+import com.fixflow.model.Reparacion;
 import com.fixflow.model.RolUsuario;
 import com.fixflow.model.Solicitud;
 import com.fixflow.model.Tecnico;
@@ -15,6 +19,7 @@ import com.fixflow.repository.TecnicoRepository;
 import com.fixflow.security.SecurityUtil;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -57,6 +62,66 @@ public class SolicitudService {
         return solicitud;
     }
 
+    @Transactional(readOnly = true)
+    public SolicitudDetalleResponse findDetalle(Long id) {
+        Solicitud solicitud = solicitudRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Solicitud no encontrada"));
+        verificarAccesoSolicitud(solicitud);
+
+        SolicitudDetalleResponse detalle = new SolicitudDetalleResponse();
+        detalle.setIdSolicitud(solicitud.getIdSolicitud());
+        detalle.setEstado(solicitud.getEstado());
+        detalle.setPrioridad(solicitud.getPrioridad());
+        detalle.setDescripcion(solicitud.getDescripcion());
+        detalle.setFecha(solicitud.getFecha());
+
+        Cliente cliente = solicitud.getCliente();
+        if (cliente != null) {
+            detalle.setClienteEmail(cliente.getUsuario() != null ? cliente.getUsuario().getEmail() : null);
+            if (cliente.getUsuario() != null) {
+                detalle.setClienteNombre((cliente.getUsuario().getNombre() + " " + cliente.getUsuario().getApellido()).trim());
+            }
+        }
+
+        Equipo equipo = solicitud.getEquipo();
+        if (equipo != null) {
+            detalle.setEquipoTipo(equipo.getTipo());
+            detalle.setEquipoMarca(equipo.getMarca());
+            detalle.setEquipoModelo(equipo.getModelo());
+            detalle.setEquipoSerial(equipo.getSerial());
+            detalle.setEquipoDescripcion(equipo.getDescripcion());
+        }
+
+        Asignacion asignacion = solicitud.getAsignacion();
+        if (asignacion != null) {
+            detalle.setFechaAsignacion(asignacion.getFechaAsignacion());
+            Tecnico tecnico = asignacion.getTecnico();
+            if (tecnico != null) {
+                detalle.setTecnicoEspecialidad(tecnico.getEspecialidad());
+                detalle.setTecnicoTelefono(tecnico.getTelefono());
+                if (tecnico.getUsuario() != null) {
+                    detalle.setTecnicoNombre((tecnico.getUsuario().getNombre() + " " + tecnico.getUsuario().getApellido()).trim());
+                }
+            }
+        }
+
+        Diagnostico diagnostico = solicitud.getDiagnostico();
+        if (diagnostico != null) {
+            detalle.setDiagnosticoDescripcion(diagnostico.getDescripcion());
+            detalle.setDiagnosticoFecha(diagnostico.getFecha());
+        }
+
+        Reparacion reparacion = solicitud.getReparacion();
+        if (reparacion != null) {
+            detalle.setReparacionSolucion(reparacion.getSolucion());
+            detalle.setReparacionObservaciones(reparacion.getObservaciones());
+            detalle.setReparacionFechaInicio(reparacion.getFechaInicio());
+            detalle.setReparacionFechaFinalizacion(reparacion.getFechaFinalizacion());
+        }
+
+        return detalle;
+    }
+
     private Cliente obtenerClienteActual() {
         Long idUsuario = SecurityUtil.getCurrentUserId();
         return idUsuario != null ? clienteRepository.findByUsuario_IdUsuario(idUsuario).orElse(null) : null;
@@ -90,6 +155,9 @@ public class SolicitudService {
                 throw new AccessDeniedException("No tienes un perfil de cliente asociado");
             }
         } else {
+            if (request.getIdCliente() == null) {
+                throw new IllegalArgumentException("El cliente es obligatorio");
+            }
             cliente = clienteRepository.findById(request.getIdCliente())
                     .orElseThrow(() -> new ResourceNotFoundException("Cliente no encontrado"));
         }
@@ -105,7 +173,7 @@ public class SolicitudService {
         solicitud.setEquipo(equipo);
         solicitud.setPrioridad(request.getPrioridad());
         solicitud.setDescripcion(request.getDescripcion().trim());
-        solicitud.setEstado(EstadoSolicitud.SOLICITUD);
+        solicitud.setEstado(EstadoSolicitud.PENDIENTE);
         return solicitudRepository.save(solicitud);
     }
 
@@ -156,11 +224,11 @@ public class SolicitudService {
 
     private void validarTransicionEstado(EstadoSolicitud actual, EstadoSolicitud nuevo) {
         if (actual == EstadoSolicitud.SOLICITUD && nuevo == EstadoSolicitud.PENDIENTE) return;
-        if (actual == EstadoSolicitud.PENDIENTE && nuevo == EstadoSolicitud.ASIGNADA) return;
         if (actual == EstadoSolicitud.ASIGNADA && nuevo == EstadoSolicitud.EN_DIAGNOSTICO) return;
         if (actual == EstadoSolicitud.EN_DIAGNOSTICO && nuevo == EstadoSolicitud.EN_REPARACION) return;
         if (actual == EstadoSolicitud.EN_REPARACION && nuevo == EstadoSolicitud.FINALIZADA) return;
-        if (nuevo == EstadoSolicitud.CANCELADA) return;
-        throw new IllegalArgumentException("Transición de estado inválida");
+        if (actual != EstadoSolicitud.FINALIZADA && actual != EstadoSolicitud.CANCELADA
+                && nuevo == EstadoSolicitud.CANCELADA) return;
+        throw new IllegalArgumentException("Transición de estado inválida. ASIGNADA solo se obtiene al asignar un técnico.");
     }
 }

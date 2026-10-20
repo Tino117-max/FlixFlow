@@ -1,14 +1,24 @@
 package com.fixflow.service;
 
+import com.fixflow.dto.RegistroRequest;
 import com.fixflow.dto.UsuarioRequest;
 import com.fixflow.dto.UsuarioResponse;
 import com.fixflow.exception.ResourceNotFoundException;
+import com.fixflow.model.Cliente;
 import com.fixflow.model.EstadoUsuario;
+import com.fixflow.model.RolUsuario;
+import com.fixflow.model.Tecnico;
 import com.fixflow.model.Usuario;
+import com.fixflow.repository.ClienteRepository;
+import com.fixflow.repository.AsignacionRepository;
+import com.fixflow.repository.EquipoRepository;
+import com.fixflow.repository.SolicitudRepository;
+import com.fixflow.repository.TecnicoRepository;
 import com.fixflow.repository.UsuarioRepository;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -17,10 +27,26 @@ import java.util.stream.Collectors;
 public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
+    private final ClienteRepository clienteRepository;
+    private final TecnicoRepository tecnicoRepository;
+    private final SolicitudRepository solicitudRepository;
+    private final EquipoRepository equipoRepository;
+    private final AsignacionRepository asignacionRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public UsuarioService(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder) {
+    public UsuarioService(UsuarioRepository usuarioRepository,
+                          ClienteRepository clienteRepository,
+                          TecnicoRepository tecnicoRepository,
+                          SolicitudRepository solicitudRepository,
+                          EquipoRepository equipoRepository,
+                          AsignacionRepository asignacionRepository,
+                          PasswordEncoder passwordEncoder) {
         this.usuarioRepository = usuarioRepository;
+        this.clienteRepository = clienteRepository;
+        this.tecnicoRepository = tecnicoRepository;
+        this.solicitudRepository = solicitudRepository;
+        this.equipoRepository = equipoRepository;
+        this.asignacionRepository = asignacionRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -39,6 +65,33 @@ public class UsuarioService {
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
     }
 
+    @Transactional
+    public Usuario registrarCliente(RegistroRequest request) {
+        String email = request.getEmail().trim();
+        if (usuarioRepository.existsByEmail(email)) {
+            throw new DataIntegrityViolationException("El email ya existe");
+        }
+
+        Usuario usuario = new Usuario();
+        usuario.setNombre(request.getNombre().trim());
+        usuario.setApellido(request.getApellido().trim());
+        usuario.setEmail(email);
+        usuario.setRol(RolUsuario.CLIENTE);
+        usuario.setEstado(EstadoUsuario.ACTIVO);
+        usuario.setPassword(passwordEncoder.encode(request.getPassword()));
+
+        Usuario nuevo = usuarioRepository.save(usuario);
+
+        Cliente cliente = new Cliente();
+        cliente.setUsuario(nuevo);
+        cliente.setTelefono(request.getTelefono().trim());
+        cliente.setDireccion(request.getDireccion().trim());
+        clienteRepository.save(cliente);
+
+        return nuevo;
+    }
+
+    @Transactional
     public UsuarioResponse create(UsuarioRequest request) {
         if (usuarioRepository.existsByEmail(request.getEmail().trim())) {
             throw new DataIntegrityViolationException("El email ya existe");
@@ -55,9 +108,12 @@ public class UsuarioService {
         usuario.setEstado(request.getEstado() != null ? request.getEstado() : EstadoUsuario.ACTIVO);
         usuario.setPassword(passwordEncoder.encode(request.getPassword()));
 
-        return toResponse(usuarioRepository.save(usuario));
+        Usuario nuevo = usuarioRepository.save(usuario);
+        sincronizarPerfilTecnico(nuevo, request);
+        return toResponse(nuevo);
     }
 
+    @Transactional
     public UsuarioResponse update(Long id, UsuarioRequest request) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
@@ -77,14 +133,70 @@ public class UsuarioService {
             usuario.setPassword(passwordEncoder.encode(request.getPassword()));
         }
 
-        return toResponse(usuarioRepository.save(usuario));
+        Usuario actualizado = usuarioRepository.save(usuario);
+        sincronizarPerfilTecnico(actualizado, request);
+        return toResponse(actualizado);
     }
 
-    public void delete(Long id) {
+    private void sincronizarPerfilTecnico(Usuario usuario, UsuarioRequest request) {
+        if (usuario.getRol() != RolUsuario.TECNICO) {
+            return;
+        }
+
+        Tecnico tecnico = tecnicoRepository.findByUsuario_IdUsuario(usuario.getIdUsuario()).orElse(null);
+        boolean nuevo = tecnico == null;
+        if (nuevo) {
+            tecnico = new Tecnico();
+            tecnico.setUsuario(usuario);
+        }
+
+        String especialidad = request.getEspecialidad();
+        if (especialidad != null && !especialidad.isBlank()) {
+            tecnico.setEspecialidad(especialidad.trim());
+        } else if (nuevo) {
+            throw new IllegalArgumentException("La especialidad es obligatoria para un técnico");
+        }
+
+        String telefono = request.getTelefono();
+        if (telefono != null && !telefono.isBlank()) {
+            tecnico.setTelefono(telefono.trim());
+        } else if (nuevo) {
+            throw new IllegalArgumentException("El teléfono es obligatorio para un técnico");
+        }
+
+        tecnicoRepository.save(tecnico);
+    }
+
+    @Transactional
+    public void desactivar(Long id) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
         usuario.setEstado(EstadoUsuario.INACTIVO);
         usuarioRepository.save(usuario);
+    }
+
+    @Transactional
+    public void eliminar(Long id) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
+
+        if (usuario.getRol() == RolUsuario.CLIENTE) {
+            clienteRepository.findByUsuario_IdUsuario(id).ifPresent(cliente -> {
+                Long idCliente = cliente.getIdCliente();
+                solicitudRepository.deleteByEquipo_Cliente_IdCliente(idCliente);
+                equipoRepository.deleteByCliente_IdCliente(idCliente);
+                clienteRepository.delete(cliente);
+            });
+        } else if (usuario.getRol() == RolUsuario.TECNICO) {
+            tecnicoRepository.findByUsuario_IdUsuario(id).ifPresent(tecnico -> {
+                asignacionRepository.deleteAllInBatch(asignacionRepository.findByTecnico_IdTecnico(tecnico.getIdTecnico()));
+                asignacionRepository.flush();
+                tecnicoRepository.delete(tecnico);
+                tecnicoRepository.flush();
+            });
+        }
+
+        usuarioRepository.delete(usuario);
     }
 
     public UsuarioResponse toResponse(Usuario usuario) {

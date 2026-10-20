@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FixFlow | Crear cuenta</title>
+  <link rel="stylesheet" href="css/styles.css?v=3" />
+</head>
+<body class="auth-page">
+  <div class="auth-box">
+    <h1>FixFlow</h1>
+    <p>Crear cuenta de cliente</p>
+    <form id="registerForm">
+      <label>
+        <span>Nombre</span>
+        <input type="text" id="nombre" autocomplete="given-name" required />
+      </label>
+      <label>
+        <span>Apellido</span>
+        <input type="text" id="apellido" autocomplete="family-name" required />
+      </label>
+      <label>
+        <span>Email</span>
+        <input type="email" id="email" autocomplete="email" required />
+      </label>
+      <label>
+        <span>Contraseña <small class="muted">(mínimo 6 caracteres)</small></span>
+        <input type="password" id="password" minlength="6" autocomplete="new-password" required />
+      </label>
+      <label>
+        <span>Confirmar contraseña</span>
+        <input type="password" id="confirmPassword" minlength="6" autocomplete="new-password" required />
+      </label>
+      <label>
+        <span>Teléfono</span>
+        <input type="tel" id="telefono" autocomplete="tel" required />
+      </label>
+      <label>
+        <span>Dirección</span>
+        <input type="text" id="direccion" autocomplete="street-address" required />
+      </label>
+      <button type="submit" class="button primary">Crear cuenta</button>
+    </form>
+    <p class="auth-links">¿Ya tienes cuenta? <a href="login.html">Iniciar sesión</a></p>
+    <p id="message" class="message"></p>
+  </div>
+
+  <script src="js/api.js?v=3"></script>
+  <script src="js/register.js?v=3"></script>
+</body>
+</html>

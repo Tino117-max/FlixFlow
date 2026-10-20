@@ -46,7 +46,7 @@ public class EquipoController {
     }
 
     @DeleteMapping("/equipos/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','CLIENTE')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         equipoService.delete(id);
         return ResponseEntity.noContent().build();

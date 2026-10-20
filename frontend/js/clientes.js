@@ -10,26 +10,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   const tableBody = document.getElementById('clientesTableBody');
   const message = document.getElementById('formMessage');
 
-  const user = JSON.parse(localStorage.getItem('fixflowUser') || 'null');
-  const role = user?.rol;
-
-  if (role !== 'ADMIN') {
-    form.closest('.panel').remove();
-  }
-
   async function loadData() {
     try {
       const clientes = await apiRequest('/clientes');
-      if (role === 'ADMIN') {
-        const usuarios = await apiRequest('/usuarios');
-        usuarioSelect.innerHTML = '<option value="">Seleccione</option>';
-        usuarios.forEach((usuario) => {
-          const option = document.createElement('option');
-          option.value = usuario.idUsuario;
-          option.textContent = `${usuario.nombre} ${usuario.apellido} (${usuario.email})`;
-          usuarioSelect.appendChild(option);
-        });
-      }
+      const usuarios = await apiRequest('/usuarios');
+      usuarioSelect.innerHTML = '<option value="">Seleccione</option>';
+      usuarios.forEach((usuario) => {
+        const option = document.createElement('option');
+        option.value = usuario.idUsuario;
+        option.textContent = `${usuario.nombre} ${usuario.apellido} (${usuario.email})`;
+        usuarioSelect.appendChild(option);
+      });
 
       document.getElementById('clientesCount').textContent = clientes.length;
       renderClientes(clientes);
@@ -46,9 +37,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       const usuario = cliente.usuario || {};
       row.innerHTML = `
         <td>${cliente.idCliente}</td>
-        <td>${usuario.nombre || ''} ${usuario.apellido || ''}</td>
-        <td>${cliente.telefono}</td>
-        <td>${cliente.direccion}</td>
+        <td>${escapeHtml(`${usuario.nombre || ''} ${usuario.apellido || ''}`.trim())}</td>
+        <td>${escapeHtml(cliente.telefono)}</td>
+        <td>${escapeHtml(cliente.direccion)}</td>
       `;
       tableBody.appendChild(row);
     });

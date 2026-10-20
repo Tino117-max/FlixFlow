@@ -25,6 +25,10 @@ public class UsuarioRequest {
 
     private EstadoUsuario estado = EstadoUsuario.ACTIVO;
 
+    private String especialidad;
+
+    private String telefono;
+
     public String getNombre() {
         return nombre;
     }
@@ -71,5 +75,21 @@ public class UsuarioRequest {
 
     public void setEstado(EstadoUsuario estado) {
         this.estado = estado;
+    }
+
+    public String getEspecialidad() {
+        return especialidad;
+    }
+
+    public void setEspecialidad(String especialidad) {
+        this.especialidad = especialidad;
+    }
+
+    public String getTelefono() {
+        return telefono;
+    }
+
+    public void setTelefono(String telefono) {
+        this.telefono = telefono;
     }
 }

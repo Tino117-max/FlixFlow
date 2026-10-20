@@ -45,10 +45,17 @@ public class UsuarioController {
         return ResponseEntity.ok(usuarioService.update(id, request));
     }
 
+    @PatchMapping("/usuarios/{id}/desactivar")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<UsuarioResponse> desactivar(@PathVariable Long id) {
+        usuarioService.desactivar(id);
+        return ResponseEntity.ok(usuarioService.findById(id));
+    }
+
     @DeleteMapping("/usuarios/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
-        usuarioService.delete(id);
+        usuarioService.eliminar(id);
         return ResponseEntity.noContent().build();
     }
 }

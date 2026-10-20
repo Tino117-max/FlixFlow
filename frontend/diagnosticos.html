@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FixFlow | Diagnósticos</title>
-  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/styles.css?v=3" />
 </head>
 <body data-roles="ADMIN,TECNICO">
   <header class="topbar">
@@ -12,7 +12,6 @@
     <nav>
       <a href="dashboard.html">Dashboard</a>
       <a href="usuarios.html" data-roles="ADMIN">Usuarios</a>
-      <a href="clientes.html" data-roles="ADMIN,CLIENTE">Clientes</a>
       <a href="equipos.html" data-roles="ADMIN,CLIENTE">Equipos</a>
       <a href="solicitudes.html" data-roles="ADMIN,CLIENTE,TECNICO">Solicitudes</a>
       <a href="diagnosticos.html">Diagnósticos</a>
@@ -34,9 +33,21 @@
         <h2>Nuevo diagnóstico</h2>
         <form id="diagnosticoForm" class="stack-form">
           <label>
-            <span>Solicitud</span>
+            <span>Solicitud / Equipo</span>
             <select id="solicitudSelect" required></select>
           </label>
+
+          <div id="problemaInfo" class="problema-info" hidden>
+            <h3>Problema reportado por el cliente</h3>
+            <div class="detalle-grid">
+              <div class="detalle-item"><span>Cliente</span><strong id="infoCliente">-</strong></div>
+              <div class="detalle-item"><span>Equipo</span><strong id="infoEquipo">-</strong></div>
+              <div class="detalle-item"><span>Serial</span><strong id="infoSerial">-</strong></div>
+              <div class="detalle-item"><span>Prioridad</span><strong id="infoPrioridad">-</strong></div>
+              <div class="detalle-item full"><span>Descripción del equipo</span><strong id="infoEquipoDesc">-</strong></div>
+              <div class="detalle-item full"><span>Síntoma / problema reportado</span><strong id="infoProblema">-</strong></div>
+            </div>
+          </div>
 
           <label>
             <span>Descripción</span>
@@ -64,7 +75,9 @@
             <tr>
               <th>ID</th>
               <th>Solicitud</th>
-              <th>Descripción</th>
+              <th>Equipo</th>
+              <th>Problema reportado</th>
+              <th>Diagnóstico</th>
               <th>Fecha</th>
             </tr>
           </thead>
@@ -74,8 +87,8 @@
     </section>
   </main>
 
-  <script src="js/api.js"></script>
-  <script src="js/auth.js"></script>
-  <script src="js/diagnosticos.js"></script>
+  <script src="js/api.js?v=3"></script>
+  <script src="js/auth.js?v=3"></script>
+  <script src="js/diagnosticos.js?v=3"></script>
 </body>
 </html>

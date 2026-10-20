@@ -1,11 +1,9 @@
 package com.fixflow.dto;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 
 public class EquipoRequest {
 
-    @NotNull(message = "El cliente es obligatorio")
     private Long idCliente;
 
     @NotBlank(message = "El tipo es obligatorio")

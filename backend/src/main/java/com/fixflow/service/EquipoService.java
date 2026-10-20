@@ -7,6 +7,7 @@ import com.fixflow.model.Equipo;
 import com.fixflow.model.RolUsuario;
 import com.fixflow.repository.ClienteRepository;
 import com.fixflow.repository.EquipoRepository;
+import com.fixflow.repository.SolicitudRepository;
 import com.fixflow.security.SecurityUtil;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.AccessDeniedException;
@@ -19,10 +20,13 @@ public class EquipoService {
 
     private final EquipoRepository equipoRepository;
     private final ClienteRepository clienteRepository;
+    private final SolicitudRepository solicitudRepository;
 
-    public EquipoService(EquipoRepository equipoRepository, ClienteRepository clienteRepository) {
+    public EquipoService(EquipoRepository equipoRepository, ClienteRepository clienteRepository,
+                         SolicitudRepository solicitudRepository) {
         this.equipoRepository = equipoRepository;
         this.clienteRepository = clienteRepository;
+        this.solicitudRepository = solicitudRepository;
     }
 
     public List<Equipo> findAll() {
@@ -65,6 +69,9 @@ public class EquipoService {
                 throw new AccessDeniedException("No tienes un perfil de cliente asociado");
             }
         } else {
+            if (request.getIdCliente() == null) {
+                throw new IllegalArgumentException("El cliente es obligatorio");
+            }
             cliente = clienteRepository.findById(request.getIdCliente())
                     .orElseThrow(() -> new ResourceNotFoundException("Cliente no encontrado"));
         }
@@ -105,6 +112,10 @@ public class EquipoService {
     public void delete(Long id) {
         Equipo equipo = equipoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Equipo no encontrado"));
+        verificarAccesoCliente(equipo.getCliente());
+        if (solicitudRepository.existsByEquipo_IdEquipo(id)) {
+            throw new IllegalArgumentException("No se puede eliminar un equipo con solicitudes asociadas");
+        }
         equipoRepository.delete(equipo);
     }
 }

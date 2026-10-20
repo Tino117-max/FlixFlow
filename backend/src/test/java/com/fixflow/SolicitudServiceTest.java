@@ -79,7 +79,7 @@ class SolicitudServiceTest {
         var created = solicitudService.create(buildRequest());
 
         assertNotNull(created.getIdSolicitud());
-        assertEquals(EstadoSolicitud.SOLICITUD, created.getEstado());
+        assertEquals(EstadoSolicitud.PENDIENTE, created.getEstado());
     }
 
     @Test
@@ -118,9 +118,9 @@ class SolicitudServiceTest {
     void shouldApplyValidStateTransition() {
         Long id = solicitudService.create(buildRequest()).getIdSolicitud();
 
-        solicitudService.updateState(id, EstadoSolicitud.PENDIENTE);
+        solicitudService.updateState(id, EstadoSolicitud.CANCELADA);
 
-        assertEquals(EstadoSolicitud.PENDIENTE, solicitudService.findById(id).getEstado());
+        assertEquals(EstadoSolicitud.CANCELADA, solicitudService.findById(id).getEstado());
     }
 
     @Test

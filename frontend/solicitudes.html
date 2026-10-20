@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FixFlow | Solicitudes</title>
-  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/styles.css?v=3" />
 </head>
 <body data-roles="ADMIN,CLIENTE,TECNICO">
   <header class="topbar">
@@ -13,7 +13,6 @@
       <a href="dashboard.html">Dashboard</a>
       <a href="usuarios.html" data-roles="ADMIN">Usuarios</a>
       <a href="solicitudes.html">Solicitudes</a>
-      <a href="clientes.html" data-roles="ADMIN,CLIENTE">Clientes</a>
       <a href="equipos.html" data-roles="ADMIN,CLIENTE">Equipos</a>
       <a href="diagnosticos.html" data-roles="ADMIN,TECNICO">Diagnósticos</a>
       <a href="reparaciones.html" data-roles="ADMIN,TECNICO">Reparaciones</a>
@@ -94,8 +93,43 @@
     </section>
   </main>
 
-  <script src="js/api.js"></script>
-  <script src="js/auth.js"></script>
-  <script src="js/solicitudes.js"></script>
+  <!-- Modal: selección de técnico (asignación) -->
+  <div class="modal-overlay" id="tecnicoModal" hidden>
+    <div class="modal">
+      <button class="modal-close" id="tecnicoModalClose" aria-label="Cerrar">&times;</button>
+      <h3>Seleccionar técnico</h3>
+      <p class="modal-sub" id="tecnicoModalSub">Elige el técnico responsable de la solicitud.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Técnico</th>
+              <th>Especialidad</th>
+              <th>Teléfono</th>
+              <th>Estado</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody id="tecnicosTableBody"></tbody>
+        </table>
+      </div>
+      <p id="tecnicoModalMessage" class="message"></p>
+    </div>
+  </div>
+
+  <!-- Modal: detalle de la solicitud (diagnóstico / reparación) -->
+  <div class="modal-overlay" id="detalleModal" hidden>
+    <div class="modal">
+      <button class="modal-close" id="detalleModalClose" aria-label="Cerrar">&times;</button>
+      <h3>Detalle de la solicitud <span id="detalleId"></span></h3>
+      <p class="modal-sub">Estado: <strong id="detalleEstado"></strong></p>
+      <div id="detalleContent"></div>
+    </div>
+  </div>
+
+  <script src="js/api.js?v=3"></script>
+  <script src="js/auth.js?v=3"></script>
+  <script src="js/solicitudes.js?v=3"></script>
 </body>
 </html>

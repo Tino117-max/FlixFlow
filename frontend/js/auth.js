@@ -54,6 +54,24 @@ document.addEventListener('DOMContentLoaded', () => {
     element.remove();
   });
 
+  const nav = document.querySelector('header nav') || document.querySelector('nav');
+  if (allowedRoles && nav && user && user.rol === 'ADMIN' && !nav.querySelector('a[href="clientes.html"]')) {
+    const link = document.createElement('a');
+    link.href = 'clientes.html';
+    link.textContent = 'Clientes';
+    const usuariosLink = nav.querySelector('a[href="usuarios.html"]');
+    if (usuariosLink) {
+      usuariosLink.insertAdjacentElement('afterend', link);
+    } else {
+      const equiposLink = nav.querySelector('a[href="equipos.html"]');
+      if (equiposLink) {
+        equiposLink.insertAdjacentElement('beforebegin', link);
+      } else {
+        nav.prepend(link);
+      }
+    }
+  }
+
   const roleLabel = document.getElementById('currentRole');
   if (roleLabel && user) {
     roleLabel.textContent = `Sesión: ${user.rol}`;

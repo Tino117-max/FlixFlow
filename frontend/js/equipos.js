@@ -18,6 +18,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   let editingId = null;
 
+  if (role === 'CLIENTE') {
+    clienteSelect.closest('label').style.display = 'none';
+    clienteSelect.required = false;
+  }
+
   async function loadData() {
     try {
       const [clientes, equipos] = await Promise.all([
@@ -51,16 +56,16 @@ document.addEventListener('DOMContentLoaded', async () => {
       const actions = `
         <span class="table-actions">
           <button class="button tiny" data-action="edit" data-id="${equipo.idEquipo}">Editar</button>
-          ${role === 'ADMIN' ? `<button class="button tiny danger" data-action="delete" data-id="${equipo.idEquipo}">Eliminar</button>` : ''}
+          <button class="button tiny danger" data-action="delete" data-id="${equipo.idEquipo}">Eliminar</button>
         </span>
       `;
       row.innerHTML = `
         <td>${equipo.idEquipo}</td>
-        <td>${usuario.nombre || ''} ${usuario.apellido || ''}</td>
-        <td>${equipo.tipo}</td>
-        <td>${equipo.marca}</td>
-        <td>${equipo.modelo}</td>
-        <td>${equipo.serial}</td>
+        <td>${escapeHtml(`${usuario.nombre || ''} ${usuario.apellido || ''}`.trim())}</td>
+        <td>${escapeHtml(equipo.tipo)}</td>
+        <td>${escapeHtml(equipo.marca)}</td>
+        <td>${escapeHtml(equipo.modelo)}</td>
+        <td>${escapeHtml(equipo.serial)}</td>
         <td>${actions}</td>
       `;
       tableBody.appendChild(row);
@@ -93,13 +98,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     message.textContent = '';
 
     const payload = {
-      idCliente: Number(clienteSelect.value),
       tipo: document.getElementById('tipoInput').value.trim(),
       marca: document.getElementById('marcaInput').value.trim(),
       modelo: document.getElementById('modeloInput').value.trim(),
       serial: document.getElementById('serialInput').value.trim(),
       descripcion: document.getElementById('descripcionInput').value.trim()
     };
+
+    if (role === 'ADMIN') {
+      payload.idCliente = Number(clienteSelect.value);
+    }
 
     try {
       if (editingId !== null) {

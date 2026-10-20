@@ -28,7 +28,7 @@ public class DiagnosticoController {
     }
 
     @PostMapping("/diagnosticos")
-    @PreAuthorize("hasAnyRole('ADMIN','TECNICO')")
+    @PreAuthorize("hasRole('TECNICO')")
     public ResponseEntity<Diagnostico> create(@Valid @RequestBody DiagnosticoRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(diagnosticoService.create(request));
     }
@@ -40,13 +40,13 @@ public class DiagnosticoController {
     }
 
     @PutMapping("/diagnosticos/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','TECNICO')")
+    @PreAuthorize("hasRole('TECNICO')")
     public ResponseEntity<Diagnostico> update(@PathVariable Long id, @Valid @RequestBody DiagnosticoRequest request) {
         return ResponseEntity.ok(diagnosticoService.update(id, request));
     }
 
     @DeleteMapping("/diagnosticos/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('TECNICO')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         diagnosticoService.delete(id);
         return ResponseEntity.noContent().build();

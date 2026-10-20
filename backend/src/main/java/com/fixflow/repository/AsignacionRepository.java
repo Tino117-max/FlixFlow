@@ -10,4 +10,5 @@ public interface AsignacionRepository extends JpaRepository<Asignacion, Long> {
     Optional<Asignacion> findBySolicitud_IdSolicitud(Long solicitudId);
     boolean existsBySolicitud_IdSolicitud(Long solicitudId);
     List<Asignacion> findByTecnico_Usuario_IdUsuario(Long idUsuario);
+    List<Asignacion> findByTecnico_IdTecnico(Long idTecnico);
 }

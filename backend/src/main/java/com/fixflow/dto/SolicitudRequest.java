@@ -6,7 +6,6 @@ import jakarta.validation.constraints.NotNull;
 
 public class SolicitudRequest {
 
-    @NotNull(message = "El cliente es obligatorio")
     private Long idCliente;
 
     @NotNull(message = "El equipo es obligatorio")

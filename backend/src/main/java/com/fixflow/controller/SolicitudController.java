@@ -1,5 +1,6 @@
 package com.fixflow.controller;
 
+import com.fixflow.dto.SolicitudDetalleResponse;
 import com.fixflow.dto.SolicitudRequest;
 import com.fixflow.model.EstadoSolicitud;
 import com.fixflow.model.Solicitud;
@@ -34,6 +35,12 @@ public class SolicitudController {
         return ResponseEntity.ok(solicitudService.findById(id));
     }
 
+    @GetMapping("/solicitudes/{id}/detalle")
+    @PreAuthorize("hasAnyRole('ADMIN','CLIENTE','TECNICO')")
+    public ResponseEntity<SolicitudDetalleResponse> getDetalle(@PathVariable Long id) {
+        return ResponseEntity.ok(solicitudService.findDetalle(id));
+    }
+
     @PostMapping("/solicitudes")
     @PreAuthorize("hasAnyRole('ADMIN','CLIENTE')")
     public ResponseEntity<Solicitud> create(@Valid @RequestBody SolicitudRequest request) {
@@ -41,7 +48,7 @@ public class SolicitudController {
     }
 
     @PutMapping("/solicitudes/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','CLIENTE','TECNICO')")
+    @PreAuthorize("hasAnyRole('ADMIN','CLIENTE')")
     public ResponseEntity<Solicitud> update(@PathVariable Long id, @Valid @RequestBody SolicitudRequest request) {
         return ResponseEntity.ok(solicitudService.update(id, request));
     }
@@ -54,7 +61,7 @@ public class SolicitudController {
     }
 
     @PatchMapping("/solicitudes/{id}/estado")
-    @PreAuthorize("hasAnyRole('ADMIN','TECNICO')")
+    @PreAuthorize("hasRole('TECNICO')")
     public ResponseEntity<Solicitud> updateState(@PathVariable Long id, @RequestParam EstadoSolicitud estado) {
         return ResponseEntity.ok(solicitudService.updateState(id, estado));
     }
